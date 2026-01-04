@@ -81,11 +81,18 @@
         .copy-btn.copied { color: var(--color-green); }
         .chevron { transition: transform 0.2s; }
         .chevron.rotated { transform: rotate(180deg); }
-        .color-btn { background: transparent; border: none; font-size: 1rem; cursor: pointer; opacity: 0.5; transition: all 0.2s; padding: 0.125rem; border-radius: 0.25rem; position: relative; }
+        .color-btn { background: transparent; border: none; cursor: pointer; opacity: 0.5; transition: all 0.2s; padding: 0.25rem; border-radius: 0.25rem; position: relative; display: flex; align-items: center; justify-content: center; }
         .color-btn:hover { opacity: 0.8; transform: scale(1.1); }
         .color-btn.active { opacity: 1; background: var(--bg-card); }
         .color-btn::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--bg-card); color: var(--text-primary); padding: 0.375rem 0.625rem; border-radius: 0.375rem; font-size: 0.6875rem; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.15s; margin-bottom: 0.375rem; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
         .color-btn:hover::after { opacity: 1; }
+        .color-dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; }
+        .dot-all { background: linear-gradient(135deg, var(--color-red) 0%, var(--color-yellow) 50%, var(--color-green) 100%); border-color: var(--text-muted); }
+        .dot-red { background: var(--color-red); border-color: var(--color-red); }
+        .dot-orange { background: var(--color-orange); border-color: var(--color-orange); }
+        .dot-yellow { background: var(--color-yellow); border-color: var(--color-yellow); }
+        .dot-green { background: var(--color-green); border-color: var(--color-green); }
+        .dot-blue { background: var(--color-blue); border-color: var(--color-blue); }
         @media (max-width: 768px) { .container { padding: 1rem; } .header, .controls { flex-direction: column; align-items: stretch; } .tabs { width: 100%; overflow-x: auto; } }
     </style>
 </head>
@@ -118,12 +125,12 @@
             <span style="opacity: 0.7;">Requests >100ms or >25MB | Queries >100ms</span>
             <div class="color-filters" style="display: flex; gap: 0.5rem; align-items: center;">
                 <span style="font-size: 0.6875rem; opacity: 0.6;">Filter:</span>
-                <button class="color-btn active" data-color="all" data-tooltip="All">All</button>
-                <button class="color-btn" data-color="red" data-tooltip="Severe (500ms+ / N+1)">Red</button>
-                <button class="color-btn" data-color="orange" data-tooltip="Danger (200-500ms)">Orange</button>
-                <button class="color-btn" data-color="yellow" data-tooltip="Warning (100-200ms)">Yellow</button>
-                <button class="color-btn" data-color="green" data-tooltip="Success">Green</button>
-                <button class="color-btn" data-color="blue" data-tooltip="Info">Blue</button>
+                <button class="color-btn active" data-color="all" data-tooltip="All"><span class="color-dot dot-all"></span></button>
+                <button class="color-btn" data-color="red" data-tooltip="Severe (500ms+ / N+1)"><span class="color-dot dot-red"></span></button>
+                <button class="color-btn" data-color="orange" data-tooltip="Danger (200-500ms)"><span class="color-dot dot-orange"></span></button>
+                <button class="color-btn" data-color="yellow" data-tooltip="Warning (100-200ms)"><span class="color-dot dot-yellow"></span></button>
+                <button class="color-btn" data-color="green" data-tooltip="Success"><span class="color-dot dot-green"></span></button>
+                <button class="color-btn" data-color="blue" data-tooltip="Info"><span class="color-dot dot-blue"></span></button>
             </div>
         </div>
 
