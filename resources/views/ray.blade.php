@@ -381,6 +381,72 @@
         .badge-debug { background: var(--accent-muted); color: var(--accent); }
         .badge-query { background: rgba(163, 113, 247, 0.15); color: var(--purple); }
         .badge-request { background: rgba(219, 109, 40, 0.15); color: var(--orange); }
+        .badge-mail { background: rgba(63, 185, 80, 0.15); color: var(--success); }
+
+        /* Mail entry */
+        .mail-headers {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 4px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-muted);
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        .mail-headers dt {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+            text-transform: uppercase;
+            font-size: 10px;
+            padding-top: 2px;
+        }
+        .mail-headers dd {
+            color: var(--text-primary);
+            font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
+            word-break: break-word;
+        }
+        .mail-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+        .mail-tab {
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .mail-tab:hover { color: var(--text-primary); }
+        .mail-tab.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+        .mail-pane { display: none; }
+        .mail-pane.active { display: block; }
+        .mail-iframe {
+            width: 100%;
+            min-height: 320px;
+            background: white;
+            border: 1px solid var(--border-muted);
+            border-radius: 6px;
+        }
+        .mail-attachments {
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .mail-attachments code {
+            color: var(--accent);
+        }
 
         .entry-preview {
             font-family: 'SF Mono', 'Fira Code', Consolas, monospace;
@@ -572,12 +638,16 @@
             $debugEntries = array_filter($entries, fn($e) => ($e['category'] ?? 'debug') === 'debug');
             $queryEntries = array_filter($entries, fn($e) => ($e['category'] ?? '') === 'query');
             $requestEntries = array_filter($entries, fn($e) => ($e['category'] ?? '') === 'request');
+            $mailEntries = array_filter($entries, fn($e) => ($e['category'] ?? '') === 'mail');
         @endphp
 
         <div class="toolbar">
             <div class="tabs">
                 <button class="tab active" data-category="debug">
                     Debug<span class="tab-count">{{ count($debugEntries) }}</span>
+                </button>
+                <button class="tab" data-category="mail">
+                    Mail<span class="tab-count">{{ count($mailEntries) }}</span>
                 </button>
                 <button class="tab" data-category="request">
                     Requests<span class="tab-count">{{ count($requestEntries) }}</span>
@@ -616,11 +686,16 @@
             @else
                 @foreach($entries as $entry)
                     @php
-                        $preview = is_string($entry['data'])
-                            ? $entry['data']
-                            : json_encode($entry['data'], JSON_UNESCAPED_SLASHES);
-                        $preview = strlen($preview) > 100 ? substr($preview, 0, 100) . '...' : $preview;
                         $category = $entry['category'] ?? 'debug';
+                        if ($category === 'mail' && is_array($entry['data'])) {
+                            $to = implode(', ', $entry['data']['to'] ?? []);
+                            $preview = $to !== '' ? "→ {$to}" : ($entry['data']['subject'] ?? '');
+                        } else {
+                            $preview = is_string($entry['data'])
+                                ? $entry['data']
+                                : json_encode($entry['data'], JSON_UNESCAPED_SLASHES);
+                        }
+                        $preview = strlen($preview) > 100 ? substr($preview, 0, 100) . '...' : $preview;
                     @endphp
                     <div class="entry color-{{ $entry['color'] ?? 'default' }}"
                          data-id="{{ $entry['id'] }}"
@@ -653,7 +728,58 @@
                             </div>
                         </div>
                         <div class="entry-body">
-                            <pre class="entry-data">{!! formatDebugData($entry['data']) !!}</pre>
+                            @if($category === 'mail' && is_array($entry['data']))
+                                @php
+                                    $mail = $entry['data'];
+                                    $hasHtml = ! empty($mail['html']);
+                                    $hasText = ! empty($mail['text']);
+                                @endphp
+                                <dl class="mail-headers">
+                                    @foreach (['from' => 'From', 'to' => 'To', 'cc' => 'CC', 'bcc' => 'BCC', 'reply_to' => 'Reply-To'] as $key => $label)
+                                        @if (! empty($mail[$key]))
+                                            <dt>{{ $label }}</dt>
+                                            <dd>{{ implode(', ', $mail[$key]) }}</dd>
+                                        @endif
+                                    @endforeach
+                                    <dt>Subject</dt>
+                                    <dd>{{ $mail['subject'] ?? '' }}</dd>
+                                </dl>
+
+                                <div class="mail-tabs">
+                                    @if($hasHtml)
+                                        <button type="button" class="mail-tab active" onclick="switchMailPane(this, 'html')">HTML</button>
+                                    @endif
+                                    @if($hasText)
+                                        <button type="button" class="mail-tab {{ $hasHtml ? '' : 'active' }}" onclick="switchMailPane(this, 'text')">Text</button>
+                                    @endif
+                                    <button type="button" class="mail-tab {{ ($hasHtml || $hasText) ? '' : 'active' }}" onclick="switchMailPane(this, 'raw')">Raw</button>
+                                </div>
+
+                                @if($hasHtml)
+                                    <div class="mail-pane active" data-pane="html">
+                                        <iframe class="mail-iframe" sandbox srcdoc="{{ $mail['html'] }}"></iframe>
+                                    </div>
+                                @endif
+                                @if($hasText)
+                                    <div class="mail-pane {{ $hasHtml ? '' : 'active' }}" data-pane="text">
+                                        <pre class="entry-data">{{ $mail['text'] }}</pre>
+                                    </div>
+                                @endif
+                                <div class="mail-pane {{ ($hasHtml || $hasText) ? '' : 'active' }}" data-pane="raw">
+                                    <pre class="entry-data">{!! formatDebugData($mail) !!}</pre>
+                                </div>
+
+                                @if(! empty($mail['attachments']))
+                                    <div class="mail-attachments">
+                                        <strong>Attachments:</strong>
+                                        @foreach($mail['attachments'] as $attachment)
+                                            <code>{{ $attachment['filename'] ?? $attachment['content_type'] }}</code> ({{ number_format($attachment['size'] / 1024, 1) }} KB)@if(! $loop->last), @endif
+                                        @endforeach
+                                    </div>
+                                @endif
+                            @else
+                                <pre class="entry-data">{!! formatDebugData($entry['data']) !!}</pre>
+                            @endif
                         </div>
                     </div>
                 @endforeach
@@ -736,6 +862,14 @@
             const chevron = header.querySelector('.chevron');
             body.classList.toggle('expanded');
             chevron.classList.toggle('open');
+        }
+
+        function switchMailPane(btn, pane) {
+            event.stopPropagation();
+            const body = btn.closest('.entry-body');
+            body.querySelectorAll('.mail-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            body.querySelectorAll('.mail-pane').forEach(p => p.classList.toggle('active', p.dataset.pane === pane));
         }
 
         function copyEntry(btn) {

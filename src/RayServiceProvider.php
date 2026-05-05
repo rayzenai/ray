@@ -3,8 +3,10 @@
 namespace RayzenAI\Ray;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use RayzenAI\Ray\Mail\RayMailTransport;
 
 class RayServiceProvider extends ServiceProvider
 {
@@ -17,6 +19,8 @@ class RayServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->registerMailTransport();
+
         if (! $this->app->environment('local')) {
             return;
         }
@@ -35,6 +39,15 @@ class RayServiceProvider extends ServiceProvider
 
         $this->registerQueryLogging();
         $this->registerRoutes();
+    }
+
+    protected function registerMailTransport(): void
+    {
+        if (! class_exists(Mail::class)) {
+            return;
+        }
+
+        Mail::extend('ray', fn () => new RayMailTransport($this->app->make(RayDebugService::class)));
     }
 
     protected function registerQueryLogging(): void
