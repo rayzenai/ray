@@ -252,7 +252,7 @@ class Ray
 
     public function send(): self
     {
-        if (! function_exists('isLocal') || ! isLocal()) {
+        if (! app()->environment('local')) {
             return $this;
         }
 

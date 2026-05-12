@@ -15,7 +15,7 @@ if (! function_exists('ray')) {
      */
     function ray(mixed $titleOrData = null, mixed $data = null): Ray
     {
-        if (! function_exists('isLocal') || ! isLocal()) {
+        if (! app()->environment('local')) {
             return new Ray($data ?? $titleOrData);
         }
 

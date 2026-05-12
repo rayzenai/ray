@@ -65,7 +65,7 @@ return [
 // Simple debug
 ray($variable);
 
-// With label
+// With label — when two arguments are passed, the first becomes the label
 ray('user data', $user);
 
 // With colors
@@ -74,9 +74,16 @@ ray($data)->green();
 ray($data)->blue();
 ray($data)->yellow();
 ray($data)->orange();
+ray($data)->purple();
 
 // Chained
 ray($data)->label('My Label')->green();
+
+// Pause — highlights the entry as paused (orange) so it stands out in the viewer
+ray($data)->pause();
+
+// Inline — log and return the original value so you can wrap an expression
+$user = ray($repository->find($id))->label('user')->value();
 ```
 
 ### Static Methods
@@ -170,7 +177,13 @@ Recorded mails show up under the **Mail** tab at `/debug/ray` with full headers,
 
 ## Debug Viewer
 
-Access the debug viewer at `/debug/ray` (local environment only).
+Once installed, the package automatically registers the dashboard route. Open it in your browser at:
+
+```
+http://your-app.test/debug/ray
+```
+
+The route is registered with the `web` middleware group under the `debug/ray` prefix, and is only accessible in the `local` environment. Access is further restricted by the `allowed_emails` config (see [Security](#security)).
 
 Features:
 - Tabs: Debug, Mail, Requests, Queries
