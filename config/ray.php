@@ -3,12 +3,25 @@
 return [
     /*
     |--------------------------------------------------------------------------
+    | Require Authentication
+    |--------------------------------------------------------------------------
+    |
+    | When false, the Ray debug viewer is accessible without logging in.
+    | Defaults to open in local/testing and locked everywhere else, so
+    | staging/production never accidentally expose debug data.
+    |
+    */
+
+    'require_auth' => env('RAY_REQUIRE_AUTH', ! app()->environment('local', 'testing')),
+
+    /*
+    |--------------------------------------------------------------------------
     | Allowed Users
     |--------------------------------------------------------------------------
     |
-    | Define which users can access the Ray debug viewer by their email.
-    | Use ['*'] to allow all authenticated users.
-    | Leave empty [] to see a configuration reminder.
+    | When authentication is required, define which users can access the
+    | Ray debug viewer by their email. Use ['*'] to allow all authenticated
+    | users. Leave empty [] to see a configuration reminder.
     |
     */
 

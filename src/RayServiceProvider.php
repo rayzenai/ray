@@ -123,6 +123,10 @@ class RayServiceProvider extends ServiceProvider
 
     protected function authorizeAccess(): void
     {
+        if (! config('ray.require_auth', true)) {
+            return;
+        }
+
         $allowedEmails = config('ray.allowed_emails', []);
 
         if (empty($allowedEmails)) {
