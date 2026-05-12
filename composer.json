@@ -1,7 +1,6 @@
 {
     "name": "rayzenai/ray",
     "description": "A lightweight Ray-like debugging tool for Laravel applications",
-    "version": "2.0.2",
     "type": "library",
     "license": "MIT",
     "authors": [
