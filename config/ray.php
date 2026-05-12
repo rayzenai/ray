@@ -7,12 +7,12 @@ return [
     |--------------------------------------------------------------------------
     |
     | When false, the Ray debug viewer is accessible without logging in.
-    | Defaults to open in local/testing and locked everywhere else, so
-    | staging/production never accidentally expose debug data.
+    | Set RAY_REQUIRE_AUTH=false in your local .env to skip auth while
+    | developing. Defaults to true so staging/production stay locked.
     |
     */
 
-    'require_auth' => env('RAY_REQUIRE_AUTH', ! app()->environment('local', 'testing')),
+    'require_auth' => env('RAY_REQUIRE_AUTH', true),
 
     /*
     |--------------------------------------------------------------------------
